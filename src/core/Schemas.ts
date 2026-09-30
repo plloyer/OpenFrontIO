@@ -49,6 +49,7 @@ export type Intent =
   | MoveWarshipIntent
   | MarkDisconnectedIntent
   | EmbargoAllIntent
+  | RepickIntent
   | UpgradeStructureIntent
   | DeleteUnitIntent
   | KickPlayerIntent
@@ -61,6 +62,7 @@ export type CancelAttackIntent = z.infer<typeof CancelAttackIntentSchema>;
 export type SpawnIntent = z.infer<typeof SpawnIntentSchema>;
 export type BoatAttackIntent = z.infer<typeof BoatAttackIntentSchema>;
 export type EmbargoAllIntent = z.infer<typeof EmbargoAllIntentSchema>;
+export type RepickIntent = z.infer<typeof RepickIntentSchema>;
 export type CancelBoatIntent = z.infer<typeof CancelBoatIntentSchema>;
 export type AllianceRequestIntent = z.infer<typeof AllianceRequestIntentSchema>;
 export type AllianceRejectIntent = z.infer<typeof AllianceRejectIntentSchema>;
@@ -682,6 +684,11 @@ export const EmbargoAllIntentSchema = z.object({
   action: z.union([z.literal("start"), z.literal("stop")]),
 });
 
+export const RepickIntentSchema = z.object({
+  type: z.literal("repick"),
+  target: MappedID,
+});
+
 export const DonateGoldIntentSchema = z.object({
   type: z.literal("donate_gold"),
   recipient: MappedID,
@@ -789,6 +796,7 @@ export const IntentSchema = z.discriminatedUnion("type", [
   UpgradeStructureIntentSchema,
   EmbargoIntentSchema,
   EmbargoAllIntentSchema,
+  RepickIntentSchema,
   MoveWarshipIntentSchema,
   QuickChatIntentSchema,
   AllianceExtensionIntentSchema,

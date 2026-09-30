@@ -9,6 +9,7 @@ import { DeleteUnitExecution } from "../../../src/core/execution/DeleteUnitExecu
 import { DonateGoldExecution } from "../../../src/core/execution/DonateGoldExecution";
 import { DonateTroopsExecution } from "../../../src/core/execution/DonateTroopExecution";
 import { EmbargoAllExecution } from "../../../src/core/execution/EmbargoAllExecution";
+import { RepickExecution } from "../../../src/core/execution/RepickExecution";
 import { EmbargoExecution } from "../../../src/core/execution/EmbargoExecution";
 import { EmojiExecution } from "../../../src/core/execution/EmojiExecution";
 import { FactoryExecution } from "../../../src/core/execution/FactoryExecution";
@@ -158,6 +159,7 @@ describe("basic execution snapshots", () => {
         new EmbargoExecution(a, c.id(), "start"),
         new EmbargoExecution(a, "nobody", "stop"),
         new EmbargoAllExecution(b, "start"),
+        new RepickExecution(d, "nobody"),
         new TargetPlayerExecution(c, d.id()),
         new TargetPlayerExecution(c, "nobody"),
         new MarkDisconnectedExecution(d, true),

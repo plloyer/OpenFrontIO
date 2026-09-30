@@ -12,6 +12,7 @@ import {
 } from "../client/Utils";
 import { assetUrl } from "../core/AssetUrls";
 import { EventBus } from "../core/EventBus";
+import { GameEnv } from "../core/configuration/Config";
 import {
   ClientInfo,
   GAME_ID_REGEX,
@@ -87,7 +88,20 @@ export class JoinLobbyModal extends BaseModal {
     // countdowns ticking.
     this.hostedLobbies = lobbies.games?.hosted ?? [];
     this.hostedLobbiesLoaded = true;
+    // Local LAN play: join the only lobby without typing its code. Once per
+    // lobby, so leaving it or a failed join doesn't loop.
+    const only = this.hostedLobbies.length === 1 ? this.hostedLobbies[0] : null;
+    if (
+      ClientEnv.env() === GameEnv.Dev &&
+      only &&
+      !this.currentLobbyId &&
+      only.gameID !== this.autoJoinedLobbyId
+    ) {
+      this.autoJoinedLobbyId = only.gameID;
+      void this.joinHostedLobby(only);
+    }
   });
+  private autoJoinedLobbyId: string | null = null;
 
   private isPrivateLobby(): boolean {
     return this.gameConfig?.gameType === GameType.Private;
@@ -632,6 +646,7 @@ export class JoinLobbyModal extends BaseModal {
     // disarmLeaveOnClose() runs, no close cascade can re-arm it and
     // disconnect the player mid game-start.
     this.leaveLobbyOnClose = true;
+    this.autoJoinedLobbyId = null;
     this.hostedLobbiesLoaded = false;
     void this.hostedLobbySocket.start();
     const lobbyId = typeof args?.lobbyId === "string" ? args.lobbyId : "";

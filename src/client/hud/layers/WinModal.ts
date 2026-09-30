@@ -12,6 +12,7 @@ import { Pattern } from "../../../core/CosmeticSchemas";
 import { EventBus } from "../../../core/EventBus";
 import { RankedType } from "../../../core/game/Game";
 import { GameUpdateType } from "../../../core/game/GameUpdates";
+import { repickCandidates } from "../../../core/game/Repick";
 import { getUserMe } from "../../Api";
 import "../../components/CosmeticCard";
 import { cosmeticSelectionLabel } from "../../components/CosmeticPresentation";
@@ -28,7 +29,8 @@ import { isDesktopShell } from "../../DesktopShell";
 import { Platform } from "../../Platform";
 import { PlaySoundEffectEvent } from "../../sound/Sounds";
 import { steamSDK } from "../../SteamSDK";
-import { SendWinnerEvent } from "../../Transport";
+import { GoToPlayerEvent } from "../../TransformHandler";
+import { SendRepickIntentEvent, SendWinnerEvent } from "../../Transport";
 import { GameView } from "../../view";
 
 @customElement("win-modal")
@@ -37,6 +39,7 @@ export class WinModal extends LitElement implements Controller {
   public eventBus: EventBus;
 
   private hasShownDeathModal = false;
+  private hasRepicked = false;
 
   @state()
   isVisible = false;
@@ -73,6 +76,7 @@ export class WinModal extends LitElement implements Controller {
         <h2 class="m-0 mb-4 text-[26px] text-center text-white shrink-0">
           ${this._title || ""}
         </h2>
+        ${this.renderRepick()}
         <div class="min-h-0 flex-1 overflow-y-auto pr-0.5">
           ${this.innerHtml()}
         </div>
@@ -104,6 +108,41 @@ export class WinModal extends LitElement implements Controller {
               : translateText("win_modal.spectate")}
             @click=${this.hide}
           ></o-button>
+        </div>
+      </div>
+    `;
+  }
+
+  private renderRepick() {
+    const me = this.game?.myPlayer();
+    if (!this.isVisible || this.isWin || this.hasRepicked) return null;
+    if (!me || me.isAlive()) return null;
+    const candidates = repickCandidates(this.game.playerViews()).sort(
+      (a, b) => b.numTilesOwned() - a.numTilesOwned(),
+    );
+    return html`
+      <div class="mb-4 shrink-0">
+        <p class="m-0 mb-2 text-center text-white/80">
+          ${translateText(
+            candidates.length > 0
+              ? "win_modal.repick"
+              : "win_modal.repick_none",
+          )}
+        </p>
+        <div
+          class="flex max-h-48 flex-wrap justify-center gap-2 overflow-y-auto"
+        >
+          ${candidates.map(
+            (p) => html`
+              <button
+                class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-bold hover:bg-blue-500"
+                @click=${() =>
+                  this.eventBus.emit(new SendRepickIntentEvent(p.id()))}
+              >
+                ${p.displayName()} (${p.numTilesOwned()})
+              </button>
+            `,
+          )}
         </div>
       </div>
     `;
@@ -306,6 +345,19 @@ export class WinModal extends LitElement implements Controller {
 
   tick() {
     const myPlayer = this.game.myPlayer();
+    // Alive again after dying means the repick went through.
+    if (this.hasShownDeathModal && myPlayer?.isAlive()) {
+      this.hasShownDeathModal = false;
+      this.hasRepicked = true;
+      if (!this.isWin) this.hide();
+      // Name locations refresh every 30 ticks, so wait for the new territory's.
+      setTimeout(
+        () => this.eventBus.emit(new GoToPlayerEvent(myPlayer, 8)),
+        4_000,
+      );
+    }
+    // Keep the repick list current while the death modal is open.
+    if (this.isVisible && !this.hasRepicked) this.requestUpdate();
     if (
       !this.hasShownDeathModal &&
       myPlayer &&

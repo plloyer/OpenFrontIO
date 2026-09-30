@@ -7,6 +7,7 @@ import {
   GameMode,
   GameType,
 } from "../core/game/Game";
+import { GameEnv } from "../core/configuration/Config";
 import {
   ClientPlatformSchema,
   GameConfig,
@@ -15,6 +16,7 @@ import {
 } from "../core/Schemas";
 import { Client } from "./Client";
 import { GamePhase, GameServer, JoinResult } from "./GameServer";
+import { ServerEnv } from "./ServerEnv";
 import {
   noopMatchTelemetryEmitter,
   type MatchTelemetryEmitter,
@@ -45,7 +47,11 @@ export class GameManager {
   // Leaving the Lobby phase (start/fill/expiry) delists them automatically.
   public listedLobbies(): GameServer[] {
     return Array.from(this.games.values()).filter(
-      (g) => g.phase() === GamePhase.Lobby && !g.isPublic() && g.isListed(),
+      (g) =>
+        g.phase() === GamePhase.Lobby &&
+        !g.isPublic() &&
+        // Local LAN play: list every private lobby so guests can join without a code.
+        (g.isListed() || ServerEnv.env() === GameEnv.Dev),
     );
   }
 

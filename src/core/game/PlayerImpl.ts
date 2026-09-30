@@ -188,6 +188,7 @@ export class PlayerImpl implements Player {
 
   private lastDeleteUnitTick: Tick = -1;
   private lastEmbargoAllTick: Tick = -1;
+  private _repicked = false;
 
   public _incomingAttacks: Attack[] = [];
   public _outgoingAttacks: Attack[] = [];
@@ -1221,6 +1222,14 @@ export class PlayerImpl implements Player {
     this.lastEmbargoAllTick = this.mg.ticks();
   }
 
+  hasRepicked(): boolean {
+    return this._repicked;
+  }
+
+  markRepicked(): void {
+    this._repicked = true;
+  }
+
   hasEmbargoAgainst(other: Player): boolean {
     return this.embargoes.has(other.id());
   }
@@ -2009,6 +2018,7 @@ export class PlayerImpl implements Player {
       relations: [...this.relations].map(([p, r]) => [w.player(p), r]),
       lastDeleteUnitTick: this.lastDeleteUnitTick,
       lastEmbargoAllTick: this.lastEmbargoAllTick,
+      repicked: this._repicked,
       incomingAttacks: this._incomingAttacks.map((a) => w.attack(a)),
       outgoingAttacks: this._outgoingAttacks.map((a) => w.attack(a)),
       outgoingLandAttacks: this._outgoingLandAttacks.map((a) => w.attack(a)),
@@ -2086,6 +2096,7 @@ export class PlayerImpl implements Player {
     );
     this.lastDeleteUnitTick = s.lastDeleteUnitTick;
     this.lastEmbargoAllTick = s.lastEmbargoAllTick;
+    this._repicked = s.repicked ?? false;
     this._incomingAttacks = s.incomingAttacks.map((i) => r.attack(i));
     this._outgoingAttacks = s.outgoingAttacks.map((i) => r.attack(i));
     this._outgoingLandAttacks = s.outgoingLandAttacks.map((i) => r.attack(i));
@@ -2155,6 +2166,7 @@ export const PlayerSnapshot = snapshotType({
     relations: z.array(z.tuple([zPlayerRef(), zNum()])),
     lastDeleteUnitTick: zInt(),
     lastEmbargoAllTick: zInt(),
+    repicked: z.boolean().optional(),
     incomingAttacks: z.array(zRef()),
     outgoingAttacks: z.array(zRef()),
     outgoingLandAttacks: z.array(zRef()),

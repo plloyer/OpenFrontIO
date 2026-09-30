@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GameEnv } from "../core/configuration/Config";
 import { GameID } from "../core/Schemas";
 import {
   commitsMatch,
@@ -258,6 +259,8 @@ export function backendReachable(): boolean | null {
  * bug, and the reason getDesktopUpdateState() exists in the same shape.
  */
 export function backendUnreachableConfirmed(): boolean {
+  // Local LAN play: no account API runs in dev, so never gate multiplayer on it.
+  if (ClientEnv.env() === GameEnv.Dev) return false;
   return (
     reachable === false && consecutiveFailures >= CONFIRM_OUTAGE_AFTER_FAILURES
   );

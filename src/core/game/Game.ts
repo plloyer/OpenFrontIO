@@ -749,6 +749,8 @@ export interface Player {
   recordDeleteUnit(): void;
   canEmbargoAll(): boolean;
   recordEmbargoAll(): void;
+  hasRepicked(): boolean;
+  markRepicked(): void;
 
   // Embargo
   hasEmbargoAgainst(other: Player): boolean;

@@ -2372,6 +2372,8 @@
     "new_lobby": "New Lobby",
     "other_team": "{team} team has won!",
     "other_won": "{player} has won!",
+    "repick": "Take over a weaker nation and keep playing:",
+    "repick_none": "No nation is weak enough to take over right now.",
     "requeue": "Play Again",
     "spectate": "Spectate",
     "support_openfront": "Support OpenFront!",

@@ -612,10 +612,11 @@ const donateGoldRadialElement: MenuElement = {
   color: "#f59e0b",
   action: (params: MenuElementParams) => {
     if (!params.selected) return;
-    params.playerPanel.openSendGoldModal(
+    params.playerPanel.openSendModal(
       params.playerActions,
       params.tile,
       params.selected,
+      "gold",
     );
   },
 };
@@ -752,15 +753,14 @@ export const centerButtonElement: CenterButtonElement = {
       params.playerActionHandler.handleSpawn(params.tile);
     } else {
       if (isFriendlyTarget(params) && !isDisconnectedTarget(params)) {
-        const selectedPlayer = params.selected as PlayerView;
-        const ratio = params.uiState?.attackRatio ?? 1;
-        const troopsToDonate = Math.floor(ratio * params.myPlayer.troops());
-        if (troopsToDonate > 0) {
-          params.playerActionHandler.handleDonateTroops(
-            selectedPlayer,
-            troopsToDonate,
-          );
-        }
+        // Confirm in the send modal (pre-filled from the attack ratio)
+        // instead of donating on a single click.
+        params.playerPanel.openSendModal(
+          params.playerActions,
+          params.tile,
+          params.selected as PlayerView,
+          "troops",
+        );
       } else {
         params.playerActionHandler.handleAttack(
           params.myPlayer,

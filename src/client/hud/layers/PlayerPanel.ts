@@ -193,16 +193,17 @@ export class PlayerPanel extends LitElement implements Controller {
     this.requestUpdate();
   }
 
-  public openSendGoldModal(
+  public openSendModal(
     actions: PlayerActions,
     tile: TileRef,
     target: PlayerView,
+    mode: "troops" | "gold",
   ) {
     this.suppressNextHide = true;
     this.actions = actions;
     this.tile = tile;
     this.sendTarget = target;
-    this.sendMode = "gold";
+    this.sendMode = mode;
     this.moderationTarget = null;
     this.reportTarget = null;
     this.isVisible = true;
